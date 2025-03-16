@@ -3,12 +3,14 @@ import personService from './services/persons'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import Notication from './components/Notification'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [notificationMessage, setNotificationMessage] = useState({type: 'sucess', text: null})
 
   useEffect(() => {
     //console.log('buscando dados')
@@ -34,6 +36,8 @@ const App = () => {
           .update(person.id, personObject)
           .then(returnedPerson => {
             setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
+            setNotificationMessage({type: 'sucess', text: `Updated '${personObject.name}'`})
+            setTimeout(() => setNotificationMessage({type: 'error', text: null}), 5000)
           })
         return
 
@@ -50,6 +54,8 @@ const App = () => {
       .then(returnedPerson => {
         console.log(returnedPerson)
         setPersons(persons.concat(returnedPerson))
+        setNotificationMessage({type: 'sucess', text: `Added '${personObject.name}'`})
+        setTimeout(() => setNotificationMessage({type: 'error', text: null}), 5000)
         setNewName('')
         setNewNumber('')
       })
@@ -75,6 +81,12 @@ const App = () => {
       .then(returnedPerson => {
         setPersons(persons.filter(person => person.id !== returnedPerson.id))
       })
+      .catch(error => {
+        setNotificationMessage({type: 'error', text: `Information of '${person.name}' has already been removed from server`})
+        setTimeout(() => setNotificationMessage({type: 'error', text: null}), 5000)
+        id = person.id
+        setPersons(persons.filter(person => person.id !== id))
+      })
     }
   }
   
@@ -85,6 +97,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notication message={notificationMessage}/>
       <Filter filter={filter} handleFilterChange={handleFilterChange}/>
       <h3>add a new</h3>
       <PersonForm addPerson={addPerson} newName={newName} newNumber={newNumber} handlePersonChange={handlePersonChange} handleNumberChange={handleNumberChange}/>
